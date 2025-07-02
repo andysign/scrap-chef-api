@@ -1,8 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { Database } from "sqlite3";
 
-// const convCoefficient = 100;
-// const batchesToTonsConv = (b: number) => Math.floor(b * convCoefficient);
+const convFactor = 100;
 
 @Injectable()
 export class ForecastService {
@@ -68,6 +67,13 @@ export class ForecastService {
     }
 
     rows.push(forecastRow);
+
+    rows.forEach((row) => {
+      for (const key of keys) {
+        row[key] = `${row[key]} (${row[key] * convFactor} Tons)`;
+      }
+    });
+
     return rows;
   }
 
