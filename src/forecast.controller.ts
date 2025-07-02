@@ -88,7 +88,7 @@ export class ForecastController {
     const group = g;
     if (f === "csv" || f === "md") {
       return new Promise(async (res) => {
-        const data = await this.forecastService.getForecastGroup(group);
+        const data = await this.forecastService.getForecastByGroup(group);
         if (f === "csv") {
           res(j2c(data));
         } else {
@@ -96,6 +96,6 @@ export class ForecastController {
         }
       });
     }
-    return this.forecastService.getForecastGroup(group);
+    return this.forecastService.getForecastByGroup(group);
   }
 }
