@@ -1,6 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { Database } from "sqlite3";
-import { parseCsv } from "./utils";
+// import { parseCsv } from "./utils";
+import * as parse from "csv-parse/lib/sync";
 
 // class ProductionDataDto {
 //   year: number;
@@ -40,6 +41,14 @@ export class AppService {
     this.initDatabase();
   }
 
+  private parseCsv(data: string): any[] {
+    return parse(data, {
+      columns: (header) => header.map((col) => col.trim()),
+      skip_empty_lines: true,
+      cast: (value) => value.trim(),
+    });
+  }
+
   private insertDefIntoProductionDatabase(dataArray: any[]) {
     this.db.serialize(() => {
       this.db.run("BEGIN TRANSACTION;");
@@ -68,7 +77,7 @@ export class AppService {
 
   private initDatabase() {
     try {
-      const recordsProduction = parseCsv(initialProductionData);
+      const recordsProduction = this.parseCsv(initialProductionData);
       const productionDataArray = recordsProduction.map((row) => ({
         year: parseInt(row.Year),
         month: parseInt(row.Month),
@@ -82,7 +91,7 @@ export class AppService {
         "records",
       );
 
-      const recordsGroups = parseCsv(initialGroupsData);
+      const recordsGroups = this.parseCsv(initialGroupsData);
       const groupsDataArray = recordsGroups.map((row) => ({
         grade: row.Grade,
         groupName: row.Group,
@@ -92,6 +101,10 @@ export class AppService {
     } catch (error) {
       console.error("Error parsing CSV:", error);
     }
+  }
+
+  getHello(): string {
+    return "NestJs API. Go to /api/v0/ pls.";
   }
 
   getProdData(): Promise<any[]> {
