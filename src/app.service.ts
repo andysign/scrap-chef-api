@@ -198,7 +198,9 @@ export class AppService {
       FROM
           production_data pd
       INNER JOIN
-          groups_data gd ON pd.grade = gd.grade;
+          groups_data gd ON pd.grade = gd.grade
+      ORDER BY
+          pd.year, pd.month, gd.group_name;
     `;
     return new Promise((resolve, reject) => {
       this.db.all(sql, (err, rows) => {
