@@ -10,7 +10,7 @@ async function bootstrap() {
     app,
     new DocumentBuilder()
       .setTitle("API")
-      .setDescription("The Backend API")
+      .setDescription("The Production Backend API (by Andy B)")
       .setVersion("1.0")
       .addTag("App")
       .build(),
