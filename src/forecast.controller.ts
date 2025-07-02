@@ -29,6 +29,13 @@ const GetForecastApiResponse: ApiResponseOptions = {
   },
 };
 
+const GetForecastApiQueryGroup: ApiQueryOptions = {
+  name: "group",
+  required: true,
+  description: "The group to forecast.",
+  example: "Rebar",
+};
+
 @ApiTags("Forecast")
 @Controller("")
 export class ForecastController {
@@ -58,10 +65,10 @@ export class ForecastController {
   @ApiQuery(GetForecastApiQueryGrade)
   @ApiResponse(GetForecastApiResponse)
   getFr(@Query("fmt") f: any, @Query("grade") g: any): Promise<any[] | string> {
-    const grades = g.split(",");
+    const grades = g?.split(",");
     if (f === "csv" || f === "md") {
       return new Promise(async (res) => {
-        const data = await this.forecastService.getForecast(grades);
+        const data = await this.forecastService.getForecastByGrades(grades);
         if (f === "csv") {
           res(j2c(data));
         } else {
@@ -69,6 +76,26 @@ export class ForecastController {
         }
       });
     }
-    return this.forecastService.getForecast(grades);
+    return this.forecastService.getForecastByGrades(grades);
+  }
+
+  @Get("/prod/forecast-by-groups")
+  @ApiOperation({ summary: "Get hist months & a forecast one for a group" })
+  @ApiQuery(GetForecastApiQueryFmt)
+  @ApiQuery(GetForecastApiQueryGroup)
+  @ApiResponse(GetForecastApiResponse)
+  getFG(@Query("fmt") f: any, @Query("group") g: any): Promise<any[] | string> {
+    const group = g;
+    if (f === "csv" || f === "md") {
+      return new Promise(async (res) => {
+        const data = await this.forecastService.getForecastGroup(group);
+        if (f === "csv") {
+          res(j2c(data));
+        } else {
+          res(c2md(j2c(data, { eol: "\n" }).trimEnd(), ",", true));
+        }
+      });
+    }
+    return new Promise((res) => res([])); // this.forecastService.getForecastGroup(group);
   }
 }
