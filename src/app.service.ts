@@ -37,9 +37,10 @@ export class AppService {
 
   private parseCsv(data: string): any[] {
     return parse(data, {
-      columns: (header) => header.map((col) => col.trim()),
+      columns: (header) => header.map((col: any) => col.trim()),
       skip_empty_lines: true,
       cast: (value) => value.trim(),
+      trim: true,
     });
   }
 
@@ -96,14 +97,39 @@ export class AppService {
   private processGroupCsv(file: any): [string, string][] {
     const csvData = file.buffer.toString("utf8");
     const records: any[] = this.parseCsv(csvData);
+
     const processedData: { [key: string]: string } = {};
     for (const r of records) {
-      if (r.Grade && r.Group) {
-        processedData[r.Grade] = r.Group;
-      }
+      if (r.Grade && r.Group) processedData[r.Grade] = r.Group;
     }
     const processedDataArr = Object.entries(processedData);
     return processedDataArr;
+  }
+
+  private processSequenceCsv(file: any): (string | number)[][] {
+    const csvData = file.buffer.toString("utf8");
+    const records: any[] = this.parseCsv(csvData);
+
+    const gradeCounts: { [key: string]: number } = {};
+    let year: number | null = null;
+    let month: number | null = null;
+    for (const r of records) {
+      if (r.Grade && r.Grade !== "-") {
+        year = new Date(r.Date).getFullYear();
+        month = new Date(r.Date).getMonth() + 1;
+        gradeCounts[r.Grade] = (gradeCounts[r.Grade] || 0) + 1;
+      }
+    }
+
+    if (year === null) return [];
+
+    const processedArr = Object.entries(gradeCounts).map(([grade, batches]) => [
+      year,
+      month,
+      grade,
+      batches,
+    ]);
+    return processedArr;
   }
 
   private upsertGroups(data: any[]): Promise<void> {
@@ -189,11 +215,18 @@ export class AppService {
       if (groupsFile) {
         const processedGroups = this.processGroupCsv(groupsFile);
         this.upsertGroups(processedGroups).then(() => {
-          resolve({ result: "OK" });
+          const processedData = this.processSequenceCsv(sequenceFile);
+          this.upsertProductionData(processedData).then(() => {
+            resolve({ result: "OK" });
+          });
         });
       } else {
         console.log("Using internal groups");
-        resolve({ result: "OK" });
+        const processedData = this.processSequenceCsv(sequenceFile);
+        // TODO: Check if each grade and see if it has a group and carry on adding else skip / err
+        this.upsertProductionData(processedData).then(() => {
+          resolve({ result: "OK" });
+        });
       }
     });
   }

@@ -32,7 +32,8 @@ const PostProductionT1ApiQuery: ApiQueryOptions = {
     type: "object",
     properties: {
       files: {
-        description: "Files required: sequence.csv and groups.csv (optional)",
+        description:
+          "Files: sequence.csv (daily sequence for an entire month) and groups.csv (optional)",
         type: "array",
         items: { type: "file" },
         minItems: 1,
@@ -151,10 +152,6 @@ export class AppController {
     if (filesLen > 1 && files[1].size) groupsFile = files[1];
 
     return this.appService.uploadProdDataT1(sequenceFile, groupsFile);
-    // return new Promise((res) => {
-    //   console.log(sequenceFile, groupsFile);
-    //   res({ response: "OK" });
-    // });
   }
 
   @Post("/prod/data/type-two")
