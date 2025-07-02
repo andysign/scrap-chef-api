@@ -11,15 +11,16 @@ import { ApiConsumes } from "@nestjs/swagger";
 import { ApiBody } from "@nestjs/swagger";
 import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { Express } from "express";
-import { json2csv } from "csv42";
+import { json2csv as j2c } from "csv42";
+import * as c2md from "csv-to-markdown-table";
 
 //
 
 const GetProdDataApiQuery: ApiQueryOptions = {
   name: "fmt",
   required: false,
-  description: "Set to 'csv' to receive data in CSV format.",
-  enum: ["csv"],
+  description: "Set to 'csv' or 'md' to receive data in the respective format.",
+  enum: ["csv", "md"],
 };
 const GetProdDataApiResponse: ApiResponseOptions = {
   status: 200,
@@ -78,8 +79,8 @@ const PostProductionT2ApiResponse: ApiResponseOptions = {
 const GetGroupsApiQuery: ApiQueryOptions = {
   name: "fmt",
   required: false,
-  description: "Set to 'csv' to receive data in CSV format.",
-  enum: ["csv"],
+  description: "Set to 'csv' or 'md' to receive data in the respective format.",
+  enum: ["csv", "md"],
 };
 const GetGroupsApiResponse: ApiResponseOptions = {
   status: 200,
@@ -125,9 +126,14 @@ export class AppController {
   @ApiQuery(GetProdDataApiQuery)
   @ApiResponse(GetProdDataApiResponse)
   prodDataWGrs(@Query("fmt") f: string): Promise<ProductionDataDto[] | string> {
-    if (f == "csv") {
+    if (f === "csv" || f === "md") {
       return new Promise(async (res) => {
-        res(json2csv(await this.appService.getProdDataWithGroups()));
+        const data = await this.appService.getProdDataWithGroups();
+        if (f === "csv") {
+          res(j2c(data));
+        } else {
+          res(c2md(j2c(data, { eol: "\n" }).trimEnd(), ",", true));
+        }
       });
     }
     return this.appService.getProdDataWithGroups();
@@ -170,9 +176,14 @@ export class AppController {
   @ApiQuery(GetProdDataApiQuery)
   @ApiResponse(GetProdDataApiResponse)
   getProdData(@Query("fmt") f: string): Promise<ProductionDataDto[] | string> {
-    if (f == "csv") {
+    if (f === "csv" || f === "md") {
       return new Promise(async (res) => {
-        res(json2csv(await this.appService.getProdData()));
+        const data = await this.appService.getProdData();
+        if (f === "csv") {
+          res(j2c(data));
+        } else {
+          res(c2md(j2c(data, { eol: "\n" }).trimEnd(), ",", true));
+        }
       });
     }
     return this.appService.getProdData();
@@ -193,9 +204,14 @@ export class AppController {
   @ApiQuery(GetGroupsApiQuery)
   @ApiResponse(GetGroupsApiResponse)
   getGroupsData(@Query("fmt") f: string): Promise<GroupGradeDto[] | string> {
-    if (f == "csv") {
+    if (f === "csv" || f === "md") {
       return new Promise(async (res) => {
-        res(json2csv(await this.appService.getGroupsData()));
+        const data = await this.appService.getGroupsData();
+        if (f === "csv") {
+          res(j2c(data));
+        } else {
+          res(c2md(j2c(data, { eol: "\n" }).trimEnd(), ",", true));
+        }
       });
     }
     return this.appService.getGroupsData();
