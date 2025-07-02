@@ -1,5 +1,5 @@
 const express = require('express');
-const { db, createSchema } = require('./db');
+const { db, createSchemas } = require('./db');
 const { parseCsv } = require('./utils');
 
 const app = express();
@@ -28,9 +28,9 @@ A36      	, MBQ
 C35      	, SBQ   	
 C40      	, SBQ   	
 A53/A543 	, CHQ   	
-`
+`;
 
-createSchema();
+createSchemas();
 
 // Helper function to insert data into database
 const insertIntoDatabase = (dataArray) => {

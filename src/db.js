@@ -12,8 +12,13 @@ const createSchemas = () => {
         grade TEXT,
         batches INTEGER
       );
+      CREATE TABLE grades (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        grade TEXT NOT NULL,
+        group_name TEXT NOT NULL
+      );
     `);
   });
 };
 
-module.exports = { db, createSchema: createSchemas };
+module.exports = { db, createSchemas };
