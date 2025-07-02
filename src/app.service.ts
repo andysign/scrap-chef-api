@@ -161,15 +161,16 @@ export class AppService {
     return new Promise((resolve, reject) => {
       this.db.serialize(() => {
         console.log(data);
-        resolve();
+        // resolve();
         this.db.run("BEGIN TRANSACTION;");
         const stmt = this.db.prepare(
           `INSERT INTO production_data (year, month, grade, batches)
-           VALUES (?, ?, ?, ?)
+           SELECT ?, ?, ?, ?
+           WHERE EXISTS (SELECT 1 FROM groups_data WHERE grade = ?)
            ON CONFLICT(year, month, grade) DO UPDATE SET batches = excluded.batches;`,
         );
         for (const [year, month, grade, batches] of data) {
-          stmt.run(year, month, grade, batches);
+          stmt.run(year, month, grade, batches, grade);
         }
         stmt.finalize((err) => {
           const command = err ? "ROLLBACK;" : "COMMIT;";
@@ -177,7 +178,7 @@ export class AppService {
             if (err || runErr) {
               reject(err || runErr);
             } else {
-              console.log("Upserted into the db:", data.length, "ele");
+              console.log("Upserted into the db:", data.length, "records");
               resolve();
             }
           });
@@ -223,9 +224,8 @@ export class AppService {
       } else {
         console.log("Using internal groups");
         const processedData = this.processSequenceCsv(sequenceFile);
-        // TODO: Check if each grade and see if it has a group and carry on adding else skip / err
         this.upsertProductionData(processedData).then(() => {
-          resolve({ result: "OK" });
+          resolve({ result: "OK. Inserted using internal groups" });
         });
       }
     });
