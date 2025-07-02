@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -10,7 +11,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "csv-parse": "^4.16.3",
+    "express": "^5.1.0",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }
