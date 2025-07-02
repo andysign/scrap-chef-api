@@ -30,7 +30,7 @@ A53/A543 	, CHQ
 `;
 
 @Injectable()
-export class AppService {
+export class ProductionService {
   constructor(@Inject("DATABASE_CONNECTION") private db: Database) {
     this.initDatabase();
   }
@@ -280,36 +280,6 @@ export class AppService {
         } else {
           resolve(rows);
         }
-      });
-    });
-  }
-
-  listTables(): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-      this.db.all(
-        "SELECT name FROM sqlite_master WHERE type='table';",
-        (err, rows: { name: string }[]) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(rows.map((row) => row.name));
-          }
-        },
-      );
-    });
-  }
-
-  resetDatabase(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.db.serialize(() => {
-        this.db.run("DELETE FROM production_data;", (err) => {
-          if (err) return reject(err);
-        });
-        this.db.run("DELETE FROM groups_data;", (err) => {
-          if (err) return reject(err);
-        });
-        this.initDatabase();
-        resolve({ response: "OK" });
       });
     });
   }

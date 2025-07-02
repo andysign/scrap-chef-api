@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Query, Delete } from "@nestjs/common";
+import { Controller, Get, Post, Query } from "@nestjs/common";
+import { ApiTags } from "@nestjs/swagger";
 import { UploadedFile, UploadedFiles } from "@nestjs/common";
 import { BadRequestException } from "@nestjs/common";
 import { UseInterceptors } from "@nestjs/common";
-import { AppService } from "./app.service";
+import { ProductionService } from "./production.service";
 import { ProductionDataDto } from "./dto/production-data.dto";
 import { GroupGradeDto } from "./dto/group-grade.dto";
 import { ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
@@ -106,14 +107,10 @@ const PostGroupsResponse: ApiResponseOptions = {
   },
 };
 
-const GetDbListTablesResponse: ApiResponseOptions = {
-  status: 200,
-  schema: { type: "array", items: { type: "string" } },
-};
-
+@ApiTags("Production")
 @Controller()
-export class AppController {
-  constructor(private readonly appService: AppService) {}
+export class ProductionController {
+  constructor(private readonly productionService: ProductionService) {}
 
   @Get("/")
   @ApiOperation({ summary: "ROOT" })
@@ -128,7 +125,7 @@ export class AppController {
   prodDataWGrs(@Query("fmt") f: string): Promise<ProductionDataDto[] | string> {
     if (f === "csv" || f === "md") {
       return new Promise(async (res) => {
-        const data = await this.appService.getProdDataWithGroups();
+        const data = await this.productionService.getProdDataWithGroups();
         if (f === "csv") {
           res(j2c(data));
         } else {
@@ -136,7 +133,7 @@ export class AppController {
         }
       });
     }
-    return this.appService.getProdDataWithGroups();
+    return this.productionService.getProdDataWithGroups();
   }
 
   @Post("/prod/data/type-one")
@@ -157,7 +154,7 @@ export class AppController {
     if (filesLen >= 1 && files[0].size) sequenceFile = files[0];
     if (filesLen > 1 && files[1].size) groupsFile = files[1];
 
-    return this.appService.uploadProdDataT1(sequenceFile, groupsFile);
+    return this.productionService.uploadProdDataT1(sequenceFile, groupsFile);
   }
 
   @Post("/prod/data/type-two")
@@ -168,7 +165,7 @@ export class AppController {
   @ApiResponse({ status: 400, description: "Invalid CSV data provided." })
   @UseInterceptors(FileInterceptor("csvFile"))
   postProdDataT2(@UploadedFile() file: Express.Multer.File): Promise<object> {
-    return this.appService.uploadProdDataT2(file);
+    return this.productionService.uploadProdDataT2(file);
   }
 
   @Get("/prod/data")
@@ -178,7 +175,7 @@ export class AppController {
   getProdData(@Query("fmt") f: string): Promise<ProductionDataDto[] | string> {
     if (f === "csv" || f === "md") {
       return new Promise(async (res) => {
-        const data = await this.appService.getProdData();
+        const data = await this.productionService.getProdData();
         if (f === "csv") {
           res(j2c(data));
         } else {
@@ -186,7 +183,7 @@ export class AppController {
         }
       });
     }
-    return this.appService.getProdData();
+    return this.productionService.getProdData();
   }
 
   @Post("/prod/groups")
@@ -196,7 +193,7 @@ export class AppController {
   @ApiResponse(PostGroupsResponse)
   @UseInterceptors(FileInterceptor("file"))
   postGroups(@UploadedFile() file: Express.Multer.File): Promise<object> {
-    return this.appService.uploadGroups(file);
+    return this.productionService.uploadGroups(file);
   }
 
   @Get("/prod/groups")
@@ -206,7 +203,7 @@ export class AppController {
   getGroupsData(@Query("fmt") f: string): Promise<GroupGradeDto[] | string> {
     if (f === "csv" || f === "md") {
       return new Promise(async (res) => {
-        const data = await this.appService.getGroupsData();
+        const data = await this.productionService.getGroupsData();
         if (f === "csv") {
           res(j2c(data));
         } else {
@@ -214,20 +211,6 @@ export class AppController {
         }
       });
     }
-    return this.appService.getGroupsData();
-  }
-
-  @ApiOperation({ summary: "Get the name of every single db table" })
-  @Get("/db/list/tables")
-  @ApiResponse(GetDbListTablesResponse)
-  listTables() {
-    return this.appService.listTables();
-  }
-
-  @Delete("/db/reset")
-  @ApiOperation({ summary: "Reset the database to its initial state" })
-  @ApiResponse({ status: 200, description: "Database reset successfully." })
-  resetDatabase(): Promise<any> {
-    return this.appService.resetDatabase();
+    return this.productionService.getGroupsData();
   }
 }
