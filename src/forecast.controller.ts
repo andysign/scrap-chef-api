@@ -2,6 +2,7 @@ import { Controller, Get, Query } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 import { ApiQueryOptions, ApiResponseOptions } from "@nestjs/swagger";
 import { ForecastService } from "./forecast.service";
+import { ForecastDataDto } from "./dto/forecast-data.dto";
 import { json2csv as j2c } from "csv42";
 import * as c2md from "csv-to-markdown-table";
 
@@ -20,13 +21,7 @@ const GetForecastApiQueryGrade: ApiQueryOptions = {
 const GetForecastApiResponse: ApiResponseOptions = {
   status: 200,
   description: "Historical data followed by a one-month forecast.",
-  schema: {
-    type: "array",
-    items: {
-      type: "object",
-      example: {},
-    },
-  },
+  type: [ForecastDataDto],
 };
 
 const GetForecastApiQueryGroup: ApiQueryOptions = {
