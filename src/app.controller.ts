@@ -6,7 +6,12 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get("/")
-  getHello() {
+  getProdData() {
     return "hello world";
+  }
+
+  @Get("list/tables")
+  listTables() {
+    return this.appService.listTables();
   }
 }
