@@ -143,6 +143,19 @@ export class AppService {
     return "NestJs API. Go to /api/v0/ pls.";
   }
 
+  getProdData(): Promise<any[]> {
+    const sql = `SELECT * FROM production_data;`;
+    return new Promise((resolve, reject) => {
+      this.db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  }
+
   getProdDataWithGroups(): Promise<any[]> {
     const sql = `
       SELECT
@@ -163,8 +176,15 @@ export class AppService {
     });
   }
 
+  uploadGroups(file: any): Promise<any> {
+    return new Promise((res) => {
+      const processedData = this.processGroupCsv(file);
+      this.upsertGroups(processedData).then(() => res({ response: "OK" }));
+    });
+  }
+
   getGroupsData(): Promise<any[]> {
-    const sql = `SELECT grade, group_name FROM groups_data;`;
+    const sql = `SELECT * FROM groups_data;`;
     return new Promise((resolve, reject) => {
       this.db.all(sql, (err, rows) => {
         if (err) {
@@ -188,13 +208,6 @@ export class AppService {
           }
         },
       );
-    });
-  }
-
-  uploadGroups(file: any): Promise<any> {
-    return new Promise((res) => {
-      const processedData = this.processGroupCsv(file);
-      this.upsertGroups(processedData).then(() => res({ response: "OK" }));
     });
   }
 }

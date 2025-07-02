@@ -11,6 +11,8 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { Express } from "express";
 import { json2csv } from "csv42";
 
+//
+
 const GetProdDataApiQuery: ApiQueryOptions = {
   name: "fmt",
   required: false,
@@ -53,6 +55,11 @@ const PostGroupsResponse: ApiResponseOptions = {
   },
 };
 
+const GetDbListTablesResponse: ApiResponseOptions = {
+  status: 200,
+  schema: { type: "array", items: { type: "string" } },
+};
+
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
@@ -76,6 +83,19 @@ export class AppController {
     return this.appService.getProdDataWithGroups();
   }
 
+  @Get("/prod/data")
+  @ApiOperation({ summary: "Get the production table" })
+  @ApiQuery(GetProdDataApiQuery)
+  @ApiResponse(GetProdDataApiResponse)
+  getProdData(@Query("fmt") f: string): Promise<ProductionDataDto[] | string> {
+    if (f == "csv") {
+      return new Promise(async (res) => {
+        res(json2csv(await this.appService.getProdData()));
+      });
+    }
+    return this.appService.getProdData();
+  }
+
   @Post("/prod/groups")
   @ApiOperation({ summary: "Upload CSV data to update/insert prod groups" })
   @ApiConsumes("multipart/form-data")
@@ -90,7 +110,7 @@ export class AppController {
   @ApiOperation({ summary: "Get all groups and their connected steel grades" })
   @ApiQuery(GetGroupsApiQuery)
   @ApiResponse(GetGroupsApiResponse)
-  getGroups(@Query("fmt") f: string): Promise<GroupGradeDto[] | string> {
+  getGroupsData(@Query("fmt") f: string): Promise<GroupGradeDto[] | string> {
     if (f == "csv") {
       return new Promise(async (res) => {
         res(json2csv(await this.appService.getGroupsData()));
@@ -101,6 +121,7 @@ export class AppController {
 
   @ApiOperation({ summary: "Get the name of every single db table" })
   @Get("/db/list/tables")
+  @ApiResponse(GetDbListTablesResponse)
   listTables() {
     return this.appService.listTables();
   }
