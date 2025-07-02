@@ -2,12 +2,7 @@ import { Injectable, Inject } from "@nestjs/common";
 import { Database } from "sqlite3";
 import * as parse from "csv-parse/lib/sync";
 
-// class ProductionDataDto {
-//   year: number;
-//   month: number;
-//   grade: string;
-//   batches: number;
-// }
+// class ProductionDataDto { year: number; month: number; grade: string; batches: number; }
 
 const initialProductionData = `
 Year 	, Month 	, Grade   	, Batches 	
@@ -189,10 +184,17 @@ export class AppService {
     });
   }
 
-  uploadProdDataT1(sequenceFile: any, groupsFile: any): Promise<any> {
+  uploadProdDataT1(sequenceFile: File, groupsFile: File | null): Promise<any> {
     return new Promise((resolve) => {
-      console.log(sequenceFile, groupsFile);
-      resolve({ result: "OK" });
+      if (groupsFile) {
+        const processedGroups = this.processGroupCsv(groupsFile);
+        this.upsertGroups(processedGroups).then(() => {
+          resolve({ result: "OK" });
+        });
+      } else {
+        console.log("Using internal groups");
+        resolve({ result: "OK" });
+      }
     });
   }
 

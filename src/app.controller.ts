@@ -34,7 +34,7 @@ const PostProductionT1ApiQuery: ApiQueryOptions = {
       files: {
         description: "Files required: sequence.csv and groups.csv (optional)",
         type: "array",
-        items: { type: "string", format: "binary" },
+        items: { type: "file" },
         minItems: 1,
         maxItems: 2,
       },
@@ -140,7 +140,7 @@ export class AppController {
   @ApiResponse({ status: 400, description: "Invalid CSV data provided." })
   @UseInterceptors(FilesInterceptor("files"))
   postProdDataT1(@UploadedFiles() files: any): Promise<object> {
-    let sequenceFile: File | null = null;
+    let sequenceFile: File = null;
     let groupsFile: File | null = null;
 
     const filesLen = files.length;
@@ -150,10 +150,11 @@ export class AppController {
     if (filesLen >= 1 && files[0].size) sequenceFile = files[0];
     if (filesLen > 1 && files[1].size) groupsFile = files[1];
 
-    return new Promise((res) => {
-      console.log(sequenceFile, groupsFile);
-      res({ response: "OK" });
-    });
+    return this.appService.uploadProdDataT1(sequenceFile, groupsFile);
+    // return new Promise((res) => {
+    //   console.log(sequenceFile, groupsFile);
+    //   res({ response: "OK" });
+    // });
   }
 
   @Post("/prod/data/type-two")
