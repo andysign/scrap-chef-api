@@ -21,6 +21,15 @@ Year 	, Month 	, Grade   	, Batches
 2024 	, 8     	, A53/A53 	, 5       	
 `;
 
+const initialGroupsData = `
+Grade    	, Group 	
+B500A    	, Rebar 	
+A36      	, MBQ   	
+C35      	, SBQ   	
+C40      	, SBQ   	
+A53/A543 	, CHQ   	
+`
+
 createSchema();
 
 // Helper function to insert data into database
