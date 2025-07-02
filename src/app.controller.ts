@@ -63,17 +63,17 @@ export class AppController {
     return "NestJs API. Go to /api/v0/ pls.";
   }
 
-  @Get("/prod/data")
-  @ApiOperation({ summary: "Get the complete production data" })
+  @Get("/prod/all")
+  @ApiOperation({ summary: "Get the complete production data w/ groups" })
   @ApiQuery(GetProdDataApiQuery)
   @ApiResponse(GetProdDataApiResponse)
-  getProdData(@Query("fmt") f: string): Promise<ProductionDataDto[] | string> {
+  prodDataWGrs(@Query("fmt") f: string): Promise<ProductionDataDto[] | string> {
     if (f == "csv") {
       return new Promise(async (res) => {
-        res(json2csv(await this.appService.getProdData()));
+        res(json2csv(await this.appService.getProdDataWithGroups()));
       });
     }
-    return this.appService.getProdData();
+    return this.appService.getProdDataWithGroups();
   }
 
   @Post("/prod/groups")

@@ -1,6 +1,5 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { Database } from "sqlite3";
-// import { parseCsv } from "./utils";
 import * as parse from "csv-parse/lib/sync";
 
 // class ProductionDataDto {
@@ -116,11 +115,35 @@ export class AppService {
     return processedDataArr;
   }
 
+  private upsertGroups(data: [string, string][]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        this.db.run("BEGIN TRANSACTION;");
+        const stmt = this.db.prepare(
+          `INSERT INTO groups_data (grade, group_name)
+           VALUES (?, ?)
+           ON CONFLICT(grade) DO UPDATE SET group_name = excluded.group_name;`,
+        );
+        for (const [grade, groupName] of data) stmt.run(grade, groupName);
+        stmt.finalize((err) => {
+          const command = err ? "ROLLBACK;" : "COMMIT;";
+          this.db.run(command, (runErr) => {
+            if (err || runErr) {
+              reject(err || runErr);
+            } else {
+              resolve();
+            }
+          });
+        });
+      });
+    });
+  }
+
   getHello(): string {
     return "NestJs API. Go to /api/v0/ pls.";
   }
 
-  getProdData(): Promise<any[]> {
+  getProdDataWithGroups(): Promise<any[]> {
     const sql = `
       SELECT
           pd.year, pd.month, gd.group_name, pd.grade, pd.batches
@@ -169,8 +192,9 @@ export class AppService {
   }
 
   uploadGroups(file: any): Promise<any> {
-    const processedData = this.processGroupCsv(file);
-    console.log("Processed data:", processedData);
-    return new Promise((res) => res({ response: "OK" }));
+    return new Promise((res) => {
+      const processedData = this.processGroupCsv(file);
+      this.upsertGroups(processedData).then(() => res({ response: "OK" }));
+    });
   }
 }
