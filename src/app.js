@@ -1,6 +1,6 @@
 const express = require('express');
 const { db, createSchema } = require('./db');
-const parse = require('csv-parse/lib/sync');
+const { parseCsv } = require('./utils');
 
 const app = express();
 app.use(express.json());
@@ -51,11 +51,7 @@ const insertIntoDatabase = (dataArray) => {
 // Init database with default sample data
 const initDatabase = () => {
   try {
-    const records = parse(initialProductionData, {
-        columns: header => header.map(col => col.trim()),
-        skip_empty_lines: true,
-        cast: value => value.trim()
-    });
+    const records = parseCsv(initialProductionData);
     console.log(records);
     const dataArray = records.map(row => ({
       year: parseInt(row.Year),
