@@ -23,8 +23,8 @@ const GetForecastApiResponse: ApiResponseOptions = {
   schema: {
     type: "array",
     items: {
-      type: "array",
-      example: [],
+      type: "object",
+      example: {},
     },
   },
 };

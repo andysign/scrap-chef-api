@@ -1,25 +1,30 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { Database } from "sqlite3";
-// import { ForecastDataDto } from "./dto/forecast-data.dto";
 
-const convCoefficient = 100;
-const batchesToTonsConv = (b: number) => Math.floor(b * convCoefficient);
-//    tonsToBatchesConv = (b: number) => Math.floor(b / convCoefficient);
+// const convCoefficient = 100;
+// const batchesToTonsConv = (b: number) => Math.floor(b * convCoefficient);
 
 @Injectable()
 export class ForecastService {
   constructor(@Inject("DATABASE_CONNECTION") private db: Database) {}
 
-  private processRows(rows: any[], grade: any, i: any) {
-    const key = "Grade_" + i + "_" + grade;
-    const processedData: any[] = rows.map((row: any) => ({
+  private processRows(rows: any[]) {
+    return rows.map((row: any) => ({
       DateYearAndMonth: `${row.year}-${String(row.month).padStart(2, "0")}`,
       Forecast: "N",
-      [key]: row.batches,
     }));
+  }
 
-    if (rows.length > 0) return processedData;
-    return [];
+  private processRowsBatches(rows: any[]) {
+    return rows.map((e) => e.batches);
+  }
+
+  private addGradeColumn(rows: any[], ar: any[], index: number, grade: string) {
+    const key = `Grade_${index}_${grade}`;
+    return rows.map((row, i) => {
+      row[key] = ar[i];
+      return row;
+    });
   }
 
   private forecastWithAverage(rows: any[], grade: string): number {
@@ -72,8 +77,15 @@ export class ForecastService {
         if (rows.length === 0) return resolve([]);
 
         const i = 0;
-        const processedPr = this.processRows(rows, grade, i);
-        const withForecast = this.forecastAndAppendToRows(processedPr);
+        const processedDates = this.processRows(rows);
+        const processedBatches = this.processRowsBatches(rows);
+        const dataWithGrade = this.addGradeColumn(
+          processedDates,
+          processedBatches,
+          i,
+          grade,
+        );
+        const withForecast = this.forecastAndAppendToRows(dataWithGrade);
         resolve(withForecast);
       });
     });
