@@ -30,8 +30,8 @@ C40      	, SBQ
 A53/A543 	, CHQ   	
 `;
 
-// Helper function to insert data into database
-const insertIntoProductionDatabase = (dataArray) => {
+// Helper function to insert default data into production table
+const insertDefIntoProductionDatabase = (dataArray) => {
   db.serialize(function () {
     db.run('BEGIN TRANSACTION;');
 
@@ -45,23 +45,59 @@ const insertIntoProductionDatabase = (dataArray) => {
   });
 };
 
+// Helper function to insert default data into groups table
+const insertIntoGroupsDatabase = (dataArray) => {
+  db.serialize(function () {
+    db.run('BEGIN TRANSACTION;');
+
+    // Create the prepared statement (the pre-compiled SQL query)
+    const stmt = db.prepare('INSERT INTO groups_data (grade, group_name) VALUES (?, ?)');
+
+    dataArray.forEach((row) => stmt.run(row.grade, row.groupName));
+
+    stmt.finalize(); // CleanUp
+    db.run('COMMIT;');
+  });
+}
+
 // Init default sample data into the production_data table and groups_data table
 const initDatabase = () => {
   try {
     const recordsProduction = parseCsv(initialProductionData);
-    // console.log(recordsProduction);
-    const dataArray = recordsProduction.map(row => ({
+    const productionDataArray = recordsProduction.map(row => ({
       year: parseInt(row.Year),
       month: parseInt(row.Month),
       grade: row.Grade,
       batches: parseInt(row.Batches)
     }));
 
-    insertIntoProductionDatabase(dataArray);
-    console.log('Inserted into the DB:', dataArray.length, 'records');
+    insertDefIntoProductionDatabase(productionDataArray);
+    console.log('Inserted into the DB:', productionDataArray.length, 'records');
+
+    const recordsGroups = parseCsv(initialGroupsData);
+    const groupsDataArray = recordsGroups.map(row => ({
+      grade: row.Grade,
+      groupName: row.Group
+    }));
+    insertIntoGroupsDatabase(groupsDataArray);
+    console.log('Inserted into the DB:', groupsDataArray.length, 'records');
+
   } catch (error) {
     console.error('Error parsing CSV:', error);
   }
+};
+
+// Helper function to get all table names
+const listTables = () => {
+  return new Promise((resolve, reject) => {
+    db.all("SELECT name FROM sqlite_master WHERE type='table';", (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows.map(row => row.name));
+      }
+    });
+  });
 };
 
 createSchemas();
@@ -75,6 +111,14 @@ app.get('/prod/data', (req, res) => {
     } else {
       res.send(rows);
     }
+  });
+});
+
+app.get('/list/tables', (req, res) => {
+  listTables().then((l) => {
+    res.send(l);
+  }).catch((error) => {
+    console.error('Error initializing database:', error);
   });
 });
 
