@@ -12,6 +12,8 @@ const createSchemas = () => {
         grade TEXT,
         batches INTEGER
       );
+    `);
+    db.run(`
       CREATE TABLE groups_data (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         grade TEXT NOT NULL,
