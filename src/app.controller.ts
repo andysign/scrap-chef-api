@@ -1,9 +1,14 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Post, Query, UploadedFile } from "@nestjs/common";
+import { UseInterceptors } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { ProductionDataDto } from "./dto/production-data.dto";
 import { GroupGradeDto } from "./dto/group-grade.dto";
 import { ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 import { ApiQueryOptions, ApiResponseOptions } from "@nestjs/swagger";
+import { ApiConsumes } from "@nestjs/swagger";
+import { ApiBody } from "@nestjs/swagger";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { Express } from "express";
 import { json2csv } from "csv42";
 
 const GetProdDataApiQuery: ApiQueryOptions = {
@@ -30,6 +35,24 @@ const GetGroupsApiResponse: ApiResponseOptions = {
   type: [GroupGradeDto],
 };
 
+const PostGroupsBodyObj: ApiQueryOptions = {
+  schema: {
+    type: "object",
+    properties: {
+      file: { type: "string", format: "binary", description: "groups.csv" },
+    },
+    required: ["file"],
+  },
+};
+const PostGroupsResponse: ApiResponseOptions = {
+  status: 201,
+  description: "Post groups OK response.",
+  schema: {
+    type: "object",
+    example: { response: "OK" },
+  },
+};
+
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
@@ -51,6 +74,16 @@ export class AppController {
       });
     }
     return this.appService.getProdData();
+  }
+
+  @Post("/prod/groups")
+  @ApiOperation({ summary: "Upload CSV data to update/insert prod groups" })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody(PostGroupsBodyObj)
+  @ApiResponse(PostGroupsResponse)
+  @UseInterceptors(FileInterceptor("file"))
+  postGroups(@UploadedFile() file: Express.Multer.File): Promise<object> {
+    return this.appService.uploadGroups(file);
   }
 
   @Get("/prod/groups")

@@ -154,4 +154,9 @@ export class AppService {
       );
     });
   }
+
+  uploadGroups(file: any): Promise<any> {
+    console.log("Received file:", file);
+    return new Promise((res) => res({ response: "OK" }));
+  }
 }
