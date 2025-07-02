@@ -18,7 +18,7 @@ export const databaseProviders = [
         db.run(`
           CREATE TABLE groups_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            grade TEXT NOT NULL,
+            grade TEXT NOT NULL UNIQUE,
             group_name TEXT NOT NULL
           );
         `);
