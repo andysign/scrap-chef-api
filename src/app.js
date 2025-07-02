@@ -105,7 +105,15 @@ createSchemas();
 initDatabase();
 
 app.get('/prod/data', (req, res) => {
-  db.all('SELECT * FROM production_data', function (err, rows) {
+  const sql = `
+    SELECT
+        pd.year, pd.month, gd.group_name, pd.grade, pd.batches
+    FROM
+        production_data pd
+    INNER JOIN
+        groups_data gd ON pd.grade = gd.grade;
+    `;
+  db.all(sql, function (err, rows) {
     if (err) {
       res.status(500).send({ message: 'Error fetching batches' });
     } else {
