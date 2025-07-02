@@ -127,6 +127,19 @@ export class AppService {
     });
   }
 
+  getGroupsData(): Promise<any[]> {
+    const sql = `SELECT grade, group_name FROM groups_data;`;
+    return new Promise((resolve, reject) => {
+      this.db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  }
+
   listTables(): Promise<string[]> {
     return new Promise((resolve, reject) => {
       this.db.all(

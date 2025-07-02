@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { ProductionDataDto } from "./dto/production-data.dto";
+import { GroupGradeDto } from "./dto/group-grade.dto";
 import { ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 import { ApiQueryOptions, ApiResponseOptions } from "@nestjs/swagger";
 import { json2csv } from "csv42";
@@ -15,6 +16,18 @@ const GetProdDataApiResponse: ApiResponseOptions = {
   status: 200,
   description: "A list of production data records.",
   type: [ProductionDataDto],
+};
+
+const GetGroupsApiQuery: ApiQueryOptions = {
+  name: "fmt",
+  required: false,
+  description: "Set to 'csv' to receive data in CSV format.",
+  enum: ["csv"],
+};
+const GetGroupsApiResponse: ApiResponseOptions = {
+  status: 200,
+  description: "A list of db grades w their corresponding groups on the right.",
+  type: [GroupGradeDto],
 };
 
 @Controller()
@@ -38,6 +51,19 @@ export class AppController {
       });
     }
     return this.appService.getProdData();
+  }
+
+  @Get("/prod/groups")
+  @ApiOperation({ summary: "Get all groups and their connected steel grades" })
+  @ApiQuery(GetGroupsApiQuery)
+  @ApiResponse(GetGroupsApiResponse)
+  getGroups(@Query("fmt") f: string): Promise<GroupGradeDto[] | string> {
+    if (f == "csv") {
+      return new Promise(async (res) => {
+        res(json2csv(await this.appService.getGroupsData()));
+      });
+    }
+    return this.appService.getGroupsData();
   }
 
   @ApiOperation({ summary: "Get the name of every single db table" })
