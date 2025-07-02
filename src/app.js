@@ -64,6 +64,16 @@ const initDatabase = () => {
 
 initDatabase();
 
+app.get('/batches', (req, res) => {
+  db.all('SELECT * FROM batches', function (err, rows) {
+    if (err) {
+      res.status(500).send({ message: 'Error fetching batches' });
+    } else {
+      res.send(rows);
+    }
+  });
+});
+
 const port = 3000;
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
