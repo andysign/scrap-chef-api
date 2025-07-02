@@ -25,6 +25,28 @@ const GetProdDataApiResponse: ApiResponseOptions = {
   type: [ProductionDataDto],
 };
 
+const PostProductionT2ApiQuery: ApiQueryOptions = {
+  schema: {
+    type: "object",
+    properties: {
+      csvFile: { type: "string", format: "binary" },
+    },
+  },
+};
+const PostProductionT2ApiResponse: ApiResponseOptions = {
+  status: 200,
+  description: "CSV data processed successfully.",
+  schema: {
+    type: "object",
+    properties: {
+      response: {
+        type: "string",
+        example: "OK",
+      },
+    },
+  },
+};
+
 const GetGroupsApiQuery: ApiQueryOptions = {
   name: "fmt",
   required: false,
@@ -81,6 +103,17 @@ export class AppController {
       });
     }
     return this.appService.getProdDataWithGroups();
+  }
+
+  @Post("/prod/data/type-two")
+  @ApiOperation({ summary: "Upload coarse breakdown into dif product groups" })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody(PostProductionT2ApiQuery)
+  @ApiResponse(PostProductionT2ApiResponse)
+  @ApiResponse({ status: 400, description: "Invalid CSV data provided." })
+  @UseInterceptors(FileInterceptor("csvFile"))
+  postProdDataT2(@UploadedFile() file: Express.Multer.File): Promise<object> {
+    return this.appService.uploadProdDataT2(file);
   }
 
   @Get("/prod/data")

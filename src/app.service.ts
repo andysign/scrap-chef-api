@@ -163,6 +163,14 @@ export class AppService {
     });
   }
 
+  uploadProdDataT2(file: any): Promise<any> {
+    console.log(file);
+    return new Promise((res) => {
+      const msg = { response: "OK" };
+      res(msg);
+    });
+  }
+
   getProdData(): Promise<any[]> {
     const sql = `SELECT * FROM production_data;`;
     return new Promise((resolve, reject) => {
