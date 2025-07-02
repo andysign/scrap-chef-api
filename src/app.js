@@ -1,4 +1,6 @@
 const express = require('express');
+const { db, createSchema } = require('./db');
+const parse = require('csv-parse/lib/sync');
 
 const app = express();
 app.use(express.json());
@@ -18,6 +20,8 @@ Year 	, Month 	, Grade   	, Batches
 2024 	, 8     	, C35     	, 3       	
 2024 	, 8     	, A53/A53 	, 5       	
 `;
+
+createSchema();
 
 const port = 3000;
 app.listen(port, () => {
