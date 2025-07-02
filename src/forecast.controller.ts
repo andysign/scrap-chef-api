@@ -14,8 +14,8 @@ const GetForecastApiQueryFmt: ApiQueryOptions = {
 const GetForecastApiQueryGrade: ApiQueryOptions = {
   name: "grade",
   required: true,
-  description: "The grade to forecast",
-  example: "B500A",
+  description: "The grade(s) to forecast (comma-separated).",
+  example: "B500A,A36",
 };
 const GetForecastApiResponse: ApiResponseOptions = {
   status: 200,
@@ -34,15 +34,16 @@ const GetForecastApiResponse: ApiResponseOptions = {
 export class ForecastController {
   constructor(private readonly forecastService: ForecastService) {}
 
-  @Get("/prod/forecast")
+  @Get("/prod/forecast-by-grades")
   @ApiOperation({ summary: "Get hist months followed by and a forecasted one" })
   @ApiQuery(GetForecastApiQueryFmt)
   @ApiQuery(GetForecastApiQueryGrade)
   @ApiResponse(GetForecastApiResponse)
   getFr(@Query("fmt") f: any, @Query("grade") g: any): Promise<any[] | string> {
+    const grades = g.split(",");
     if (f === "csv" || f === "md") {
       return new Promise(async (res) => {
-        const data = await this.forecastService.getForecast(g);
+        const data = await this.forecastService.getForecast(grades);
         if (f === "csv") {
           res(j2c(data));
         } else {
@@ -50,6 +51,6 @@ export class ForecastController {
         }
       });
     }
-    return this.forecastService.getForecast(g);
+    return this.forecastService.getForecast(grades);
   }
 }

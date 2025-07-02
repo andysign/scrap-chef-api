@@ -8,23 +8,34 @@ import { Database } from "sqlite3";
 export class ForecastService {
   constructor(@Inject("DATABASE_CONNECTION") private db: Database) {}
 
-  private processRows(rows: any[]) {
-    return rows.map((row: any) => ({
-      DateYearAndMonth: `${row.year}-${String(row.month).padStart(2, "0")}`,
-      Forecast: "N",
-    }));
-  }
+  private processDataByMonth(rows: any[], grades: any[]) {
+    const dataByMonth: { [key: string]: any } = {};
 
-  private processRowsBatches(rows: any[]) {
-    return rows.map((e) => e.batches);
-  }
-
-  private addGradeColumn(rows: any[], ar: any[], index: number, grade: string) {
-    const key = `Grade_${index}_${grade}`;
-    return rows.map((row, i) => {
-      row[key] = ar[i];
-      return row;
+    rows.forEach((row) => {
+      const yearMonthKey = `${row.year}-${String(row.month).padStart(2, "0")}`;
+      if (!dataByMonth[yearMonthKey]) {
+        dataByMonth[yearMonthKey] = {
+          DateYearAndMonth: yearMonthKey,
+          Forecast: "N",
+        };
+      }
     });
+
+    grades.forEach((grade, i) => {
+      const gradeRows = rows.filter((r) => r.grade === grade);
+      const batchesByYearMonth: { [key: string]: number } = {};
+      gradeRows.forEach((row) => {
+        const yearMonthKey = `${row.year}-${String(row.month).padStart(2, "0")}`;
+        batchesByYearMonth[yearMonthKey] = row.batches;
+      });
+
+      for (const yearMonthKey in dataByMonth) {
+        dataByMonth[yearMonthKey][`Grade_${i}_${grade}`] =
+          batchesByYearMonth[yearMonthKey] || 0;
+      }
+    });
+
+    return dataByMonth;
   }
 
   private forecastWithAverage(rows: any[], grade: string): number {
@@ -60,33 +71,25 @@ export class ForecastService {
     return rows;
   }
 
-  getForecast(grade: string): Promise<any[]> {
+  async getForecast(grades: string[]): Promise<any[]> {
+    if (!grades || grades.length === 0) return [];
+
+    const placeholders = grades.map(() => "?").join(",");
+    const sql = `
+      SELECT year, month, grade, batches
+      FROM production_data
+      WHERE grade IN (${placeholders})
+      ORDER BY year, month
+    `;
+
     return new Promise((resolve, reject) => {
-      const sql = `
-        SELECT
-            year, month, batches
-        FROM
-            production_data
-        WHERE
-            grade = ?
-        ORDER BY
-            year, month
-      `;
-      this.db.all(sql, [grade], (err, rows: any[]) => {
+      this.db.all(sql, grades, (err, rows: any[]) => {
         if (err) return reject(err);
         if (rows.length === 0) return resolve([]);
 
-        const i = 0;
-        const processedDates = this.processRows(rows);
-        const processedBatches = this.processRowsBatches(rows);
-        const dataWithGrade = this.addGradeColumn(
-          processedDates,
-          processedBatches,
-          i,
-          grade,
-        );
-        const withForecast = this.forecastAndAppendToRows(dataWithGrade);
-        resolve(withForecast);
+        const dataByMonth = this.processDataByMonth(rows, grades);
+        const result = this.forecastAndAppendToRows(Object.values(dataByMonth));
+        resolve(result);
       });
     });
   }
