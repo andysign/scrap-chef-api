@@ -71,9 +71,40 @@ export class ForecastService {
     return rows;
   }
 
-  async getForecast(grades: string[]): Promise<any[]> {
-    if (!grades || grades.length === 0) return [];
+  getForecastAllGrades(): Promise<any[]> {
+    const sql = `SELECT DISTINCT grade FROM production_data`;
+    return new Promise((resolve, reject) => {
+      this.db.all(sql, (err, rows: any[]) => {
+        if (err) return reject(err);
+        const grades = rows.map(({ grade }) => grade);
 
+        if (!grades || grades.length === 0) resolve([]);
+
+        console.log(rows.map(({ grade }) => grade));
+
+        const placeholders = grades.map(() => "?").join(",");
+        const sql = `
+          SELECT year, month, grade, batches
+          FROM production_data
+          WHERE grade IN (${placeholders})
+          ORDER BY year, month
+        `;
+
+        this.db.all(sql, grades, (err, rows: any[]) => {
+          if (err) return reject(err);
+          if (rows.length === 0) return resolve([]);
+
+          const dataByMonth = this.processDataByMonth(rows, grades);
+          const result = this.forecastAndAppendToRows(
+            Object.values(dataByMonth),
+          );
+          resolve(result);
+        });
+      });
+    });
+  }
+
+  getForecast(grades: string[]): Promise<any[]> {
     const placeholders = grades.map(() => "?").join(",");
     const sql = `
       SELECT year, month, grade, batches
@@ -83,6 +114,7 @@ export class ForecastService {
     `;
 
     return new Promise((resolve, reject) => {
+      if (!grades || grades.length === 0) resolve([]);
       this.db.all(sql, grades, (err, rows: any[]) => {
         if (err) return reject(err);
         if (rows.length === 0) return resolve([]);

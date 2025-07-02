@@ -49,7 +49,7 @@ export class ForecastController {
         }
       });
     }
-    return new Promise((res) => res([])); // "this.forecastService.getForecastAllGrades()"
+    return this.forecastService.getForecastAllGrades();
   }
 
   @Get("/prod/forecast-by-grades")
