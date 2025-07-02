@@ -63,7 +63,7 @@ export class AppService {
     });
   }
 
-  private insertIntoGroupsDatabase(dataArray: any[]) {
+  private insertDefIntoGroupsDatabase(dataArray: any[]) {
     this.db.serialize(() => {
       this.db.run("BEGIN TRANSACTION;");
       const stmt = this.db.prepare(
@@ -96,11 +96,24 @@ export class AppService {
         grade: row.Grade,
         groupName: row.Group,
       }));
-      this.insertIntoGroupsDatabase(groupsDataArray);
+      this.insertDefIntoGroupsDatabase(groupsDataArray);
       console.log("Inserted into the DB:", groupsDataArray.length, "records");
     } catch (error) {
       console.error("Error parsing CSV:", error);
     }
+  }
+
+  private processGroupCsv(file: any): [string, string][] {
+    const csvData = file.buffer.toString("utf8");
+    const records: any[] = this.parseCsv(csvData);
+    const processedData: { [key: string]: string } = {};
+    for (const r of records) {
+      if (r.Grade && r.Group) {
+        processedData[r.Grade] = r.Group;
+      }
+    }
+    const processedDataArr = Object.entries(processedData);
+    return processedDataArr;
   }
 
   getHello(): string {
@@ -156,7 +169,8 @@ export class AppService {
   }
 
   uploadGroups(file: any): Promise<any> {
-    console.log("Received file:", file);
+    const processedData = this.processGroupCsv(file);
+    console.log("Processed data:", processedData);
     return new Promise((res) => res({ response: "OK" }));
   }
 }

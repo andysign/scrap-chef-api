@@ -100,7 +100,7 @@ export class AppController {
   }
 
   @ApiOperation({ summary: "Get the name of every single db table" })
-  @Get("/list/tables")
+  @Get("/db/list/tables")
   listTables() {
     return this.appService.listTables();
   }
