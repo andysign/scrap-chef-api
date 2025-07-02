@@ -84,11 +84,7 @@ export class AppService {
         batches: parseInt(row.Batches),
       }));
       this.insertDefIntoProductionDatabase(productionDataArray);
-      console.log(
-        "Inserted into the DB:",
-        productionDataArray.length,
-        "records",
-      );
+      console.log("Inserted into DB:", productionDataArray.length, "records");
 
       const recordsGroups = this.parseCsv(initialGroupsData);
       const groupsDataArray = recordsGroups.map((row) => ({
@@ -115,7 +111,7 @@ export class AppService {
     return processedDataArr;
   }
 
-  private upsertGroups(data: [string, string][]): Promise<void> {
+  private upsertGroups(data: any[]): Promise<void> {
     return new Promise((resolve, reject) => {
       this.db.serialize(() => {
         this.db.run("BEGIN TRANSACTION;");
@@ -131,6 +127,36 @@ export class AppService {
             if (err || runErr) {
               reject(err || runErr);
             } else {
+              console.log("Upserted into the db:", data.length, "ele");
+              resolve();
+            }
+          });
+        });
+      });
+    });
+  }
+
+  private upsertProductionData(data: any[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        console.log(data);
+        resolve();
+        this.db.run("BEGIN TRANSACTION;");
+        const stmt = this.db.prepare(
+          `INSERT INTO production_data (year, month, grade, batches)
+           VALUES (?, ?, ?, ?)
+           ON CONFLICT(year, month, grade) DO UPDATE SET batches = excluded.batches;`,
+        );
+        for (const [year, month, grade, batches] of data) {
+          stmt.run(year, month, grade, batches);
+        }
+        stmt.finalize((err) => {
+          const command = err ? "ROLLBACK;" : "COMMIT;";
+          this.db.run(command, (runErr) => {
+            if (err || runErr) {
+              reject(err || runErr);
+            } else {
+              console.log("Upserted into the db:", data.length, "ele");
               resolve();
             }
           });
@@ -164,10 +190,20 @@ export class AppService {
   }
 
   uploadProdDataT2(file: any): Promise<any> {
-    console.log(file);
-    return new Promise((res) => {
-      const msg = { response: "OK" };
-      res(msg);
+    return new Promise((resolve) => {
+      const csvData = file.buffer.toString("utf8");
+      const r: any[] = this.parseCsv(csvData);
+
+      const conv = (n: string) => Math.ceil(parseInt(n) / 100);
+      const grs: any[] = r.map((e) => [e["Grade"], e["Quality group"]]);
+      const prs: any[] = r.map((e) => [e.Year, e.Month, e.Grade, conv(e.Tons)]);
+
+      Promise.all([
+        this.upsertGroups(grs),
+        this.upsertProductionData(prs),
+      ]).then(() => {
+        resolve({ response: "OK" });
+      });
     });
   }
 

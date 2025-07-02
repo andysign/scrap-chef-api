@@ -12,7 +12,8 @@ export const databaseProviders = [
             year INTEGER,
             month INTEGER,
             grade TEXT,
-            batches INTEGER
+            batches INTEGER,
+            UNIQUE(year, month, grade)
           );
         `);
         db.run(`
