@@ -2,6 +2,7 @@ import { Controller, Get, Query } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { ProductionDataDto } from "./dto/production-data.dto";
 import { ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
+import { json2csv } from "csv42";
 
 @Controller()
 export class AppController {
@@ -17,8 +18,8 @@ export class AppController {
   @ApiQuery({
     name: "fmt",
     required: false,
-    description: "Set to 'csv' or 'tsv' to receive data in CSV or TSV format.",
-    enum: ["csv", "tsv"],
+    description: "Set to 'csv' to receive data in CSV format.",
+    enum: ["csv"],
   })
   @ApiResponse({
     status: 200,
@@ -28,9 +29,9 @@ export class AppController {
   getProdData(@Query("fmt") f: string): Promise<ProductionDataDto[] | string> {
     console.log({ f });
     if (f == "csv") {
-      return new Promise((resolve) => resolve("foo"));
-    } else if (f == "tsv") {
-      return new Promise((resolve) => resolve("var"));
+      return new Promise(async (res) => {
+        res(json2csv(await this.appService.getProdData()));
+      });
     }
     return this.appService.getProdData();
   }
