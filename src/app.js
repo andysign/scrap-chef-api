@@ -38,7 +38,7 @@ const insertIntoDatabase = (dataArray) => {
     db.run('BEGIN TRANSACTION;');
 
     // Create the prepared statement (the pre-compiled SQL query)
-    const stmt = db.prepare('INSERT INTO batches (year, month, grade, batches) VALUES (?, ?, ?, ?)');
+    const stmt = db.prepare('INSERT INTO production_data (year, month, grade, batches) VALUES (?, ?, ?, ?)');
 
     dataArray.forEach((row) => stmt.run(row.year, row.month, row.grade, row.batches));
 
@@ -70,7 +70,7 @@ const initDatabase = () => {
 initDatabase();
 
 app.get('/batches', (req, res) => {
-  db.all('SELECT * FROM batches', function (err, rows) {
+  db.all('SELECT * FROM production_data', function (err, rows) {
     if (err) {
       res.status(500).send({ message: 'Error fetching batches' });
     } else {

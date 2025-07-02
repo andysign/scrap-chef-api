@@ -2,10 +2,10 @@ const sqlite3 = require('sqlite3').verbose();
 
 const db = new sqlite3.Database(':memory:');
 
-const createSchema = () => {
+const createSchemas = () => {
   db.serialize(function () {
     db.run(`
-      CREATE TABLE batches (
+      CREATE TABLE production_data (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         year INTEGER,
         month INTEGER,
@@ -16,4 +16,4 @@ const createSchema = () => {
   });
 };
 
-module.exports = { db, createSchema };
+module.exports = { db, createSchema: createSchemas };
