@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query } from "@nestjs/common";
+import { Controller, Get, Post, Query, Delete } from "@nestjs/common";
 import { UploadedFile, UploadedFiles } from "@nestjs/common";
 import { BadRequestException } from "@nestjs/common";
 import { UseInterceptors } from "@nestjs/common";
@@ -222,5 +222,12 @@ export class AppController {
   @ApiResponse(GetDbListTablesResponse)
   listTables() {
     return this.appService.listTables();
+  }
+
+  @Delete("/db/reset")
+  @ApiOperation({ summary: "Reset the database to its initial state" })
+  @ApiResponse({ status: 200, description: "Database reset successfully." })
+  resetDatabase(): Promise<any> {
+    return this.appService.resetDatabase();
   }
 }
