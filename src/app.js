@@ -30,6 +30,8 @@ C40      	, SBQ
 A53/A543 	, CHQ   	
 `;
 
+const port = 3000;
+
 // Helper function to insert default data into production table
 const insertDefIntoProductionDatabase = (dataArray) => {
   db.serialize(function () {
@@ -130,7 +132,6 @@ app.get('/list/tables', (req, res) => {
   });
 });
 
-const port = 3000;
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
