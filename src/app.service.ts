@@ -189,6 +189,13 @@ export class AppService {
     });
   }
 
+  uploadProdDataT1(sequenceFile: any, groupsFile: any): Promise<any> {
+    return new Promise((resolve) => {
+      console.log(sequenceFile, groupsFile);
+      resolve({ result: "OK" });
+    });
+  }
+
   uploadProdDataT2(file: any): Promise<any> {
     return new Promise((resolve) => {
       const csvData = file.buffer.toString("utf8");

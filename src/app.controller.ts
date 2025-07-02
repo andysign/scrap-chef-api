@@ -1,4 +1,6 @@
-import { Controller, Get, Post, Query, UploadedFile } from "@nestjs/common";
+import { Controller, Get, Post, Query } from "@nestjs/common";
+import { UploadedFile, UploadedFiles } from "@nestjs/common";
+import { BadRequestException } from "@nestjs/common";
 import { UseInterceptors } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { ProductionDataDto } from "./dto/production-data.dto";
@@ -7,7 +9,7 @@ import { ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 import { ApiQueryOptions, ApiResponseOptions } from "@nestjs/swagger";
 import { ApiConsumes } from "@nestjs/swagger";
 import { ApiBody } from "@nestjs/swagger";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { Express } from "express";
 import { json2csv } from "csv42";
 
@@ -23,6 +25,31 @@ const GetProdDataApiResponse: ApiResponseOptions = {
   status: 200,
   description: "A list of production data records.",
   type: [ProductionDataDto],
+};
+
+const PostProductionT1ApiQuery: ApiQueryOptions = {
+  schema: {
+    type: "object",
+    properties: {
+      files: {
+        description: "Files required: sequence.csv and groups.csv (optional)",
+        type: "array",
+        items: { type: "string", format: "binary" },
+        minItems: 1,
+        maxItems: 2,
+      },
+    },
+  },
+};
+const PostProductionT1ApiResponse: ApiResponseOptions = {
+  status: 200,
+  description: "CSV data processed successfully.",
+  schema: {
+    type: "object",
+    properties: {
+      response: { type: "file", example: "OK" },
+    },
+  },
 };
 
 const PostProductionT2ApiQuery: ApiQueryOptions = {
@@ -103,6 +130,30 @@ export class AppController {
       });
     }
     return this.appService.getProdDataWithGroups();
+  }
+
+  @Post("/prod/data/type-one")
+  @ApiOperation({ summary: "Upload a sequence of heats of specified grades" })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody(PostProductionT1ApiQuery)
+  @ApiResponse(PostProductionT1ApiResponse)
+  @ApiResponse({ status: 400, description: "Invalid CSV data provided." })
+  @UseInterceptors(FilesInterceptor("files"))
+  postProdDataT1(@UploadedFiles() files: any): Promise<object> {
+    let sequenceFile: File | null = null;
+    let groupsFile: File | null = null;
+
+    const filesLen = files.length;
+    if (filesLen < 1) throw new BadRequestException("Attach min 1 item(s)");
+    if (filesLen > 2) throw new BadRequestException("Attach max 2 item(s)");
+
+    if (filesLen >= 1 && files[0].size) sequenceFile = files[0];
+    if (filesLen > 1 && files[1].size) groupsFile = files[1];
+
+    return new Promise((res) => {
+      console.log(sequenceFile, groupsFile);
+      res({ response: "OK" });
+    });
   }
 
   @Post("/prod/data/type-two")
