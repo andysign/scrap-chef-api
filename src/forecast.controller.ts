@@ -96,6 +96,6 @@ export class ForecastController {
         }
       });
     }
-    return new Promise((res) => res([])); // this.forecastService.getForecastGroup(group);
+    return this.forecastService.getForecastGroup(group);
   }
 }
