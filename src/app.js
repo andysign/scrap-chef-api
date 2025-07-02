@@ -30,10 +30,8 @@ C40      	, SBQ
 A53/A543 	, CHQ   	
 `;
 
-createSchemas();
-
 // Helper function to insert data into database
-const insertIntoDatabase = (dataArray) => {
+const insertIntoProductionDatabase = (dataArray) => {
   db.serialize(function () {
     db.run('BEGIN TRANSACTION;');
 
@@ -44,32 +42,33 @@ const insertIntoDatabase = (dataArray) => {
 
     stmt.finalize(); // CleanUp
     db.run('COMMIT;');
-    console.log('Database initialized with sample data');
   });
 };
 
-// Init database with default sample data
+// Init default sample data into the production_data table and groups_data table
 const initDatabase = () => {
   try {
-    const records = parseCsv(initialProductionData);
-    console.log(records);
-    const dataArray = records.map(row => ({
+    const recordsProduction = parseCsv(initialProductionData);
+    // console.log(recordsProduction);
+    const dataArray = recordsProduction.map(row => ({
       year: parseInt(row.Year),
       month: parseInt(row.Month),
       grade: row.Grade,
       batches: parseInt(row.Batches)
     }));
 
-    console.log('CSV parsed into array:', dataArray.length, 'records');
-    insertIntoDatabase(dataArray);
+    insertIntoProductionDatabase(dataArray);
+    console.log('Inserted into the DB:', dataArray.length, 'records');
   } catch (error) {
     console.error('Error parsing CSV:', error);
   }
 };
 
+createSchemas();
+
 initDatabase();
 
-app.get('/batches', (req, res) => {
+app.get('/prod/data', (req, res) => {
   db.all('SELECT * FROM production_data', function (err, rows) {
     if (err) {
       res.status(500).send({ message: 'Error fetching batches' });
