@@ -143,8 +143,15 @@ export class AppService {
     return "NestJs API. Go to /api/v0/ pls.";
   }
 
-  getProdData(): Promise<any[]> {
-    const sql = `SELECT * FROM production_data;`;
+  getProdDataWithGroups(): Promise<any[]> {
+    const sql = `
+      SELECT
+          pd.year, pd.month, gd.group_name, pd.grade, pd.batches
+      FROM
+          production_data pd
+      INNER JOIN
+          groups_data gd ON pd.grade = gd.grade;
+    `;
     return new Promise((resolve, reject) => {
       this.db.all(sql, (err, rows) => {
         if (err) {
@@ -156,15 +163,8 @@ export class AppService {
     });
   }
 
-  getProdDataWithGroups(): Promise<any[]> {
-    const sql = `
-      SELECT
-          pd.year, pd.month, gd.group_name, pd.grade, pd.batches
-      FROM
-          production_data pd
-      INNER JOIN
-          groups_data gd ON pd.grade = gd.grade;
-    `;
+  getProdData(): Promise<any[]> {
+    const sql = `SELECT * FROM production_data;`;
     return new Promise((resolve, reject) => {
       this.db.all(sql, (err, rows) => {
         if (err) {
