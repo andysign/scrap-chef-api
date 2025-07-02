@@ -37,10 +37,16 @@ export class ForecastService {
     return dataByMonth;
   }
 
-  private forecastWithAverage(rows: any[], grade: string): number {
-    const totalBatches = rows.reduce((acc, cur) => acc + (cur[grade] || 0), 0);
-    const forecastBatches = Math.round(totalBatches / rows.length);
-    return forecastBatches;
+  // private forecastWithAverage(rows: any[], grade: string): number {
+  //   const totalBatches = rows.reduce((acc, cur) => acc + (cur[grade] || 0), 0);
+  //   const forecastBatches = Math.round(totalBatches / rows.length);
+  //   return forecastBatches;
+  // }
+
+  private simpleMovingAverage(vals: number[], periods: number): number | null {
+    if (vals.length < periods) return null;
+    const sum = vals.slice(-periods).reduce((a, v) => a + v, 0);
+    return sum / periods;
   }
 
   private forecastAndAppendToRows(rows: any[]) {
@@ -63,7 +69,9 @@ export class ForecastService {
     };
 
     for (const key of keys) {
-      forecastRow[key] = this.forecastWithAverage(rows, key);
+      const values = rows.map((r) => r[key]);
+      const sma = this.simpleMovingAverage(values, values.length);
+      forecastRow[key] = sma !== null ? Math.round(sma) : 0;
     }
 
     rows.push(forecastRow);
