@@ -34,6 +34,24 @@ const GetForecastApiResponse: ApiResponseOptions = {
 export class ForecastController {
   constructor(private readonly forecastService: ForecastService) {}
 
+  @Get("/prod/forecast")
+  @ApiOperation({ summary: "Get hist months & a forecast one for all grades" })
+  @ApiQuery(GetForecastApiQueryFmt)
+  @ApiResponse(GetForecastApiResponse)
+  getFrAll(@Query("fmt") f: any): Promise<any[] | string> {
+    if (f === "csv" || f === "md") {
+      return new Promise(async (res) => {
+        const data = await this.forecastService.getForecastAllGrades();
+        if (f === "csv") {
+          res(j2c(data));
+        } else {
+          res(c2md(j2c(data, { eol: "\n" }).trimEnd(), ",", true));
+        }
+      });
+    }
+    return new Promise((res) => res([])); // "this.forecastService.getForecastAllGrades()"
+  }
+
   @Get("/prod/forecast-by-grades")
   @ApiOperation({ summary: "Get hist months followed by and a forecasted one" })
   @ApiQuery(GetForecastApiQueryFmt)
