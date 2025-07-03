@@ -1,3 +1,21 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Hiring Challenge Api](#hiring-challenge-api)
+  - [Hiring Challenge Api: The Challenge](#hiring-challenge-api-the-challenge)
+  - [Hiring Challenge Api: Screenshots](#hiring-challenge-api-screenshots)
+  - [Hiring Challenge Api: Samples](#hiring-challenge-api-samples)
+  - [Hiring Challenge Api: Prerequisites](#hiring-challenge-api-prerequisites)
+  - [Hiring Challenge Api: Installation](#hiring-challenge-api-installation)
+  - [Hiring Challenge Api: How to Run](#hiring-challenge-api-how-to-run)
+    - [Hiring Challenge Api: How to Run: Development](#hiring-challenge-api-how-to-run-development)
+    - [Hiring Challenge Api: How to Run: Production](#hiring-challenge-api-how-to-run-production)
+  - [Hiring Challenge Api: Forecast](#hiring-challenge-api-forecast)
+  - [Hiring Challenge Api: Conversion to Friendly Formats](#hiring-challenge-api-conversion-to-friendly-formats)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Hiring Challenge Api
 
 This is the _API solution_ I've build for the an imaginary plant production plant. Since this was open to any language/framework, I have decided to use the programming language **JavaScript** ( **TypeScript** ) and build the API with the **[NestJs](https://nestjs.com/)** framework and this project makes use of the **[Sqlite3 Database](https://www.sqlite.org/)**.
