@@ -31,6 +31,18 @@ The challenge can be found below:
 
 ---
 
+## Hiring Challenge Api: Screenshots
+
+Swagger GUI:
+
+![](assets/99-swagger.png)
+
+## Hiring Challenge Api: Samples
+
+For sample CSV files ( and their related MarkDown versions ) see the **`./samples/`** folder.
+
+---
+
 ## Hiring Challenge Api: Prerequisites
 
 - [Node.js](https://nodejs.org/en/download/) (v22 or higher)
@@ -85,6 +97,16 @@ Then, start the production server:
 ```bash
 npm run start:prod
 ```
+
+---
+
+## Hiring Challenge Api: Conversion to Friendly Formats
+
+In order to make things simple and avoid the use of various specific NPMs I have decided to convert the given files to CSVs, more or less, as described below:
+
+![](assets/00-steel-grade-prod-friendly-format-t.png)
+
+![](assets/01-charge-schedule-friendly-format-t.png)
 
 ---
 
