@@ -160,6 +160,17 @@ export class ForecastService {
           if (rows.length === 0) return resolve([]);
 
           const dataByMonth = this.processDataByMonth(rows, grades);
+          Object.keys(dataByMonth).forEach((d) => {
+            const { DateYearAndMonth, Forecast, ...rest } = dataByMonth[d];
+            const vals = Object.values(rest);
+            const sum = vals.reduce((a: number, b: number) => a + b);
+            dataByMonth[d] = {
+              DateYearAndMonth,
+              Forecast,
+              Grade_Grades_Grouped: sum,
+            };
+          });
+
           const result = this.forecastAndAppendToRows(
             Object.values(dataByMonth),
           );
