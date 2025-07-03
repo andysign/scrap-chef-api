@@ -74,7 +74,7 @@ For sample CSV files ( and their related MarkDown versions ) see the **`./sample
 
 ## Hiring Challenge Api: How to Run
 
-### Development
+### Hiring Challenge Api: How to Run: Development
 
 To run the application in development mode with watch mode enabled, use the following command:
 
@@ -84,7 +84,7 @@ npm run start:dev
 
 The application will be available at `http://localhost:3000`.
 
-### Production
+### Hiring Challenge Api: How to Run: Production
 
 To run the application in production mode, you first need to build the project:
 
@@ -97,6 +97,28 @@ Then, start the production server:
 ```bash
 npm run start:prod
 ```
+
+---
+
+## Hiring Challenge Api: Forecast
+
+For calculating the forecast my initial approach was to use a simple average of all previous months. However, since the result was far away from the provided data and since I have learned that factories use more advanced algorithms I have decided to use a more advanced algorithm.
+
+I have used the following Simple Moving Average algorithm:
+
+```py
+SMA_t = (X_*(t-2) + X_*(t-1) + X_t) / 3
+```
+
+Where:
+
+- **`SMA_t`** = Simple Moving Average at time _t_ - which in this case is September ( 2024 )
+
+- **`X_t`** = Value at current period
+
+- **`X_(t-1)`** = Value at previous period
+
+- **`X_(t-2)`** = Value two periods ago
 
 ---
 
